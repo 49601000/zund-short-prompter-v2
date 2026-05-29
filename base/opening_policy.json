@@ -2,7 +2,7 @@
   "id": "opening_policy",
   "default_mode": "zundamon_cold_opening",
   "available_modes": {
-    "gpt_default": {
+    "zundamon_cold_opening": {
       "display_name": "ずんだもんあるあるスタート",
       "starter": "zundamon",
       "rules": [
