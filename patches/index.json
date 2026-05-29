@@ -1,15 +1,21 @@
 [
   {
-    "id": "claude_noble_boost",
-    "label": "Claude高貴ブースト",
+    "id": "metan_reality_fatigue_event",
+    "label": "めたん現実疲れイベント",
     "type": "character_tuning",
-    "file": "claude_noble_boost.json"
+    "file": "metan_reality_fatigue_event.json"
   },
   {
-    "id": "claude_walkout_event",
-    "label": "Claude帰宅イベント補強",
+    "id": "zundamon_awakening_event",
+    "label": "ずんだもん覚醒イベント",
     "type": "event_patch",
-    "file": "claude_walkout_event.json"
+    "file": "zundamon_awakening_event.json"
+  },
+  {
+    "id": "ten_no_koe_soft_to_zundamon_event",
+    "label": "天の声ソフトからずんだもんイベント",
+    "type": "event_patch",
+    "file": "ten_no_koe_soft_to_zundamon_event.json"
   },
   {
     "id": "hatoyome_guest",
