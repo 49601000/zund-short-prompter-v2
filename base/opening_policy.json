@@ -22,7 +22,7 @@
     
     "reaction_start": {
       "display_name": "リアクション開始",
-      "starter": "random",
+      "starter": "reaction",
       "rules": [
         "最初の発言をリアクションから始めてよい",
         "『いや待て』『なんでだよ』『極端なのだ』など反応先行で開始してよい",

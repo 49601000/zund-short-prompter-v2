@@ -1145,7 +1145,7 @@ function getSelectedOpeningMode(personas, guestCharacters) {
   ];
   const sampledStarter = modeId === "fully_random"
     ? shuffle(candidates)[0]
-    : "GPT";
+    : "zundamon";
 
   return {
     id: modeId,
@@ -1234,7 +1234,7 @@ function assemblePrompt(payload) {
     `適用ルール: ${state.selectedRuleId}`,
     `選択スタイル: ${style.id}`,
     `開幕モード: ${openingPolicyMode.id}`,
-    `最初の発言者: ${openingPolicyMode.id === "zundamon_cold_open" ? "ずんだもん" : "完全ランダム"}`,
+    `最初の発言者: ${openingPolicyMode.id === "zundamon_cold_opening" ? "ずんだもん" : "完全ランダム"}`,
     ...(openingPolicyMode.id === "fully_random"
       ? [`開始話者サンプル: ${openingPolicyMode.sampled_starter}`]
       : []),
@@ -1326,7 +1326,7 @@ function normalizeRuleForPrompt(rule) {
         post_exit_reaction_required: legacyWalkoutEnabled
       },
       post_walkout_debate: {
-        continue_with: ["GPT", "Grok", "Gemini"],
+        continue_with: ["zundamon", "metan", "ten_no_koe"],
         required_behavior: legacyModifiers
       },
       ending_modifier: {
@@ -1368,7 +1368,7 @@ function formatOpeningPolicyMode(mode) {
 function formatOpeningPolicyInstructions(mode) {
   if (mode.id === "zundamon_cold_opening") {
     return [
-      "- opening_policy が zundamon_cold_opening の場合、最初の発言者は必ず ずんだもん",
+      "- opening_policy が zundamon_cold_opening の場合、最初の発言者は必ずzundamon",
       "- 最初から軽くズレている状態で開始してよい",
       "- ただし議論を完結させず、他キャラが反論・茶化し・前提刺し・脱線しやすい余白を残す"
     ];
