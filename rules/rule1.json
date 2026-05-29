@@ -1,0 +1,109 @@
+{
+  "id": "rule1",
+  "display_name": "基本ショート会話",
+  "scenario_type": "standard_short_dialogue",
+  "rule_scope": "scenario_modifier_only",
+
+  "description": "ずんだもん・めたん・天の声による、ショート動画向け基本会話。テンポとライブ感を優先する。",
+
+  "modifiers": {
+    "debate_heat": "medium",
+    "character_intensity": "medium",
+
+    "zundamon_behavior": {
+      "emotion_level": "high",
+      "logic_level": "low",
+      "allowed": [
+        "極論",
+        "棚上げ",
+        "欲望優先",
+        "感情論",
+        "雑な一般化"
+      ],
+      "required": [
+        "会話の空気を動かす",
+        "最後に雑な人間臭さを出してよい"
+      ]
+    },
+
+    "metan_behavior": {
+      "explanation_frequency": "high",
+      "required": [
+        "短くツッコむ",
+        "短く整理する",
+        "『それは○○ね』形式を許可する",
+        "極論を現実ラインへ戻す"
+      ],
+      "forbidden": [
+        "長文講義",
+        "完全論破",
+        "教師的説明"
+      ]
+    },
+
+    "ten_no_koe_behavior": {
+      "enabled": true,
+      "appearance_rate": "low",
+      "required": [
+        "風刺的な比喩を使う",
+        "SNS・TL感覚を持ち込む",
+        "短く刺して去る"
+      ],
+      "forbidden": [
+        "長居する",
+        "議論をまとめる",
+        "説教する"
+      ]
+    },
+
+    "ending_modifier": {
+      "enabled": true,
+      "required_behavior": [
+        "最後はずんだもんで終わってよい",
+        "綺麗にまとめない",
+        "欲望・怠惰・承認欲求を雑に残す",
+        "少しズレた空気で終える"
+      ]
+    }
+  },
+
+  "constraints": {
+    "do_not_duplicate_renderer_rules": [
+      "発言テンポ",
+      "短文ラリー",
+      "口調",
+      "発言長",
+      "基本リアクション"
+    ],
+
+    "do_not_emit": [
+      "scenario_type",
+      "rule_scope",
+      "scenario_modifier_only",
+      "内部制御説明"
+    ]
+  },
+
+  "examples": {
+    "zundamon_examples": [
+      "でも褒められたいのだ",
+      "ボクは悪くないのだ",
+      "それは別件なのだ"
+    ],
+
+    "metan_examples": [
+      "それただの承認欲求ね",
+      "極端すぎよ",
+      "感情だだ漏れよ"
+    ],
+
+    "ten_no_koe_examples": [
+      "SNS、感情のフードコートで草",
+      "人類、通知に支配されすぎ問題草",
+       "承認欲求、インフレしすぎです",
+       "SNSって電子版回覧板ですからね"
+    ]
+  },
+
+  "prompt_fragment": "ショート動画向けの短文ラリーを生成する。ずんだもんが感情と欲望で空気を動かし、めたんが短く整理・解説し、天の声が必要時のみ風刺的な比喩で空気を切る。最後は綺麗にまとめず、ずんだもんが雑に壊して終わってよい。"
+}

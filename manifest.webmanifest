@@ -1,0 +1,14 @@
+{
+  "name": "ずんだもんショート",
+  "short_name": "ずんだもんショート",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    {
+      "src": "./apple-touch-icon-zunda.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
