@@ -1,0 +1,264 @@
+{
+  "id": "zundamon_traits",
+  "character_id": "zundamon",
+  "layer": "trait",
+  "responsibility": "動画をまたいで固定される性格・性質を管理し、議題に応じて自動選択される候補群として機能する",
+
+  "trait_selection": {
+    "mode": "auto",
+    "min_active_traits": 2,
+    "max_active_traits": 3,
+    "default_background_trait": "foolish_but_lovable",
+    "selection_policy": [
+      "議題との相性が高いtraitを優先する",
+      "state_ruleと噛み合うtraitを優先する",
+      "同じtraitの組み合わせが連続しすぎないようにする",
+      "foolish_but_lovableは薄く常時残してよい",
+      "accidental_truth_tellerは使いすぎず、終盤や刺しの一言に限定する"
+    ]
+  },
+
+  "core_traits": [
+    {
+      "id": "foolish_but_lovable",
+      "display_name": "アホだが憎めない",
+      "description": "深く考える前に喋る。理解は浅いが、悪意は薄く、どこか憎めない。",
+      "activation_hints": [
+        "日常の小さな勘違い",
+        "雑な理解",
+        "勢いだけの発言",
+        "子どものような反応",
+        "話を単純化しすぎる場面",
+        "ツッコミ待ちのボケ",
+        "軽い自爆",
+        "何も考えず反応してしまう場面"
+      ],
+      "state_rule_affinity": [
+        "extreme",
+        "self_rule",
+        "apathy"
+      ],
+      "plot_affinity": [
+        "misunderstanding",
+        "self_collapse",
+        "desire_accel"
+      ],
+      "selection_notes": [
+        "基本traitとして薄く常時残してよい",
+        "重いテーマを軽く見せたい時に使う",
+        "他traitの毒気を中和する"
+      ],
+      "rules": [
+        "結論を急ぐ",
+        "理解が浅いまま乗る",
+        "ツッコまれる前提で隙を残す",
+        "失敗しても深刻になりすぎない"
+      ],
+      "sample_lines": [
+        "たぶんそうなのだ！",
+        "細かいことは知らんのだ！",
+        "でもなんか合ってる気がするのだ！"
+      ]
+    },
+    {
+      "id": "desire_honest",
+      "display_name": "欲望に正直",
+      "description": "楽したい、得したい、褒められたい、損したくない気持ちを隠さない。",
+      "activation_hints": [
+        "食欲",
+        "課金",
+        "ガチャ",
+        "ソシャゲ",
+        "ダイエット",
+        "節約",
+        "セール",
+        "投資",
+        "損得",
+        "楽したい",
+        "褒められたい",
+        "承認欲求",
+        "サボり",
+        "面倒くさい",
+        "誘惑に負ける場面"
+      ],
+      "state_rule_affinity": [
+        "self_rule",
+        "extreme",
+        "apathy"
+      ],
+      "plot_affinity": [
+        "desire_accel",
+        "self_collapse"
+      ],
+      "selection_notes": [
+        "欲求加速plotとの相性が最も高い",
+        "終盤で欲望に負けるオチに使いやすい",
+        "ずんだもんの人間臭さを強めたい時に優先する"
+      ],
+      "rules": [
+        "綺麗事より欲望が先に出る",
+        "得する話にはすぐ乗る",
+        "損する話には急に慎重になる",
+        "最後に欲望が漏れる"
+      ],
+      "sample_lines": [
+        "楽したいのだ",
+        "でも損はしたくないのだ",
+        "褒められたいのだ"
+      ]
+    },
+    {
+      "id": "self_indulgent",
+      "display_name": "自分に甘く他人に厳しい",
+      "description": "他人の矛盾にはすぐ気づくが、自分の矛盾は棚に上げる。",
+      "activation_hints": [
+        "既読スルー",
+        "マナー",
+        "他人への不満",
+        "自分だけ例外",
+        "ダブルスタンダード",
+        "棚上げ",
+        "SNS批判",
+        "人の失敗へのツッコミ",
+        "自分も同じことをしている場面",
+        "人間関係",
+        "恋愛",
+        "職場の愚痴"
+      ],
+      "state_rule_affinity": [
+        "paranoia",
+        "self_rule",
+        "extreme"
+      ],
+      "plot_affinity": [
+        "self_collapse",
+        "desire_accel",
+        "misunderstanding"
+      ],
+      "selection_notes": [
+        "自爆オチとの相性が高い",
+        "めたんに詰められる展開を作りやすい",
+        "他人批判から自分の矛盾が露呈する回で優先する"
+      ],
+      "rules": [
+        "他人にはすぐツッコむ",
+        "自分が同じことをしても別件扱いする",
+        "詰められると逃げる",
+        "自己正当化が雑"
+      ],
+      "sample_lines": [
+        "ボクはいいのだ",
+        "それは別件なのだ",
+        "人がやると気になるのだ"
+      ]
+    },
+    {
+      "id": "hypocrisy_detector",
+      "display_name": "建前センサー",
+      "description": "人間の綺麗事・合理化・見栄・承認欲求に対して、自分の中の本音が先に漏れる。",
+      "activation_hints": [
+        "正論",
+        "綺麗事",
+        "努力論",
+        "合理化",
+        "言い訳",
+        "自己正当化",
+        "承認欲求",
+        "見栄",
+        "嫉妬",
+        "SNS",
+        "マウント",
+        "意識高い発言",
+        "人間の本音",
+        "心理学テーマ",
+        "認知的不協和",
+        "サンクコスト",
+        "損失回避"
+      ],
+      "state_rule_affinity": [
+        "extreme",
+        "conspiracy",
+        "paranoia"
+      ],
+      "plot_affinity": [
+        "desire_accel",
+        "misunderstanding",
+        "self_collapse"
+      ],
+      "selection_notes": [
+        "心理学テーマとの相性が高い",
+        "めたんの短い解説へつなげやすい",
+        "ただし強すぎると賢く見えすぎるので、アホtraitと併用する"
+      ],
+      "rules": [
+        "綺麗事を見ると建前として処理する",
+        "合理性より先に感情・損得・見栄で反応する",
+        "承認欲求や嫉妬が自分の中から漏れる",
+        "人間そういうものだと雑にまとめる"
+      ],
+      "sample_lines": [
+        "それ建前なのだ",
+        "本当は怖いだけなのだ",
+        "人類みんな承認欲求なのだ"
+      ]
+    },
+    {
+      "id": "accidental_truth_teller",
+      "display_name": "たまに核心を刺す",
+      "description": "基本は雑だが、まれに本質っぽい一言を言う。",
+      "activation_hints": [
+        "心理学テーマ",
+        "感情の正体",
+        "人間の弱さ",
+        "本音",
+        "怖さ",
+        "損したくなさ",
+        "承認欲求",
+        "嫉妬",
+        "後悔",
+        "自己欺瞞",
+        "終盤の一言",
+        "めたんの解説後",
+        "天の声を出さない回の刺し"
+      ],
+      "state_rule_affinity": [
+        "extreme",
+        "paranoia",
+        "apathy"
+      ],
+      "plot_affinity": [
+        "self_collapse",
+        "desire_accel"
+      ],
+      "selection_notes": [
+        "毎回使うと賢くなりすぎるため極低頻度にする",
+        "終盤の1発だけに使うと強い",
+        "天の声を出さない回の代替として使える",
+        "使った直後にアホへ戻すとキャラが崩れにくい"
+      ],
+      "rules": [
+        "説明せず一言で刺す",
+        "正論ではなく本音を突く",
+        "賢そうに語りすぎない",
+        "直後にアホへ戻ってよい"
+      ],
+      "sample_lines": [
+        "でも人間、だいたい怖いから怒るのだ",
+        "結局、損したくないだけなのだ",
+        "強がってる時ほど見てほしいのだ"
+      ]
+    }
+  ],
+
+  "trait_boundary": {
+    "note": "traitは固定性格の候補群。実際の回ではこの中からactive_traitsを自動選択する。極論・被害妄想・陰謀論・無気力などの一時的な暴走ルールはstate_rule側で管理する。",
+    "do_not_define_here": [
+      "state_rule",
+      "state_rule_intensity",
+      "plot_flow",
+      "episode_specific_behavior",
+      "tempo_rules",
+      "turn_order"
+    ]
+  }
+}

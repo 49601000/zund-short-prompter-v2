@@ -1,0 +1,145 @@
+{
+  "id": "state_rule",
+  "display_name": "stateルール",
+  "scenario_type": "short_dialogue",
+  "rule_scope": "scenario_modifier_only",
+
+  "description": "ずんだもん・めたん・天の声による、ショート動画向け基本会話。テンポとライブ感を優先する。",
+
+  "modifiers": {
+    "debate_heat": "medium",
+    "character_intensity": "medium",
+
+    "zundamon_behavior": {
+      "emotion_level": "high",
+      "logic_level": "low",
+      "required": [
+        "会話の空気を動かす",
+        "最後に雑な人間臭さを出してよい"
+      ],
+      "forbidden": [
+        "冷静すぎる整理",
+        "賢すぎる分析",
+        "長文説明"
+      ]
+    },
+
+    "zundamon_state_rule": {
+      "enabled": true,
+      "role": "その回ごとの議題に対する暴れ方を決める",
+      "selection_mode": "auto_or_random",
+      "min_active_states": 1,
+      "max_active_states": 1,
+      "states": {
+        "extreme": {
+          "display_name": "極論",
+          "frequency": "normal",
+          "rules": [
+            "物事を0か100で判断する",
+            "小さな出来事を大事件に飛躍させる",
+            "中間の可能性を無視する"
+          ]
+        },
+        "personal_rule": {
+          "display_name": "自分ルール",
+          "frequency": "normal",
+          "rules": [
+            "自分だけの基準を常識として扱う",
+            "他人にも同じルールを求める",
+            "根拠より感覚の納得を優先する"
+          ]
+        },
+        "victim_mode": {
+          "display_name": "被害妄想",
+          "frequency": "normal",
+          "rules": [
+            "相手の行動を自分への攻撃として解釈する",
+            "偶然や事情より悪意を疑う",
+            "自分だけが損しているように感じる"
+          ]
+        },
+        "conspiracy_mode": {
+          "display_name": "陰謀論",
+          "frequency": "low",
+          "rules": [
+            "裏で誰かが操作していると考える",
+            "偶然を認めず意図を読みすぎる",
+            "話を少し大きな構造へ飛躍させる"
+          ]
+        },
+        "apathy": {
+          "display_name": "無気力",
+          "frequency": "very_low",
+          "rules": [
+            "考えるのを面倒くさがる",
+            "怒りや欲望ではなく怠さで反応する",
+            "結論をどうでもいい方向へ流す"
+          ]
+        }
+      },
+      "constraints": [
+        "stateはその回だけ有効",
+        "stateはpersonaを書き換えない",
+        "stateはstyle_rendererの口調を上書きしない",
+        "stateは議題への反応パターンだけを変える",
+        "無気力は極低頻度でのみ使う"
+      ]
+    },
+
+    "metan_behavior": {
+      "role": "reality_corrector",
+      "labeling_frequency": "medium",
+      "explanation_frequency": "low_to_medium",
+      "required": [
+        "まず短くツッコむ",
+        "必要な時だけ一言で整理する",
+        "『それは○○ね』形式を許可する",
+        "極論を現実ラインへ戻す",
+        "完全否定せず会話を流す"
+      ],
+      "forbidden": [
+        "長文講義",
+        "完全論破",
+        "教師的説明",
+        "心理学の詳細解説"
+      ]
+    },
+
+    "ten_no_koe_behavior": {
+      "enabled": true,
+      "appearance_rate": "low",
+      "role": "cultural_memory_searcher",
+      "usage_policy": [
+        "必要な時だけ登場する",
+        "会話の主役にならない",
+        "説明ではなく文化的記憶への置き換えとして出す",
+        "一言だけ残して去る"
+      ],
+      "required": [
+        "構造が一致する文化的記憶を探す",
+        "具体例へ置き換える",
+        "映像が浮かぶ比喩を使う",
+        "短く刺して去る"
+      ],
+      "forbidden": [
+        "長居する",
+        "議論をまとめる",
+        "説教する",
+        "心理学を説明する",
+        "SNS論へ逃げる",
+        "人類論へ逃げる",
+        "流行語だけで済ませる"
+      ]
+    },
+
+    "ending_modifier": {
+      "enabled": true,
+      "required_behavior": [
+        "最後はずんだもんで終わってよい",
+        "綺麗にまとめない",
+        "欲望・怠惰・承認欲求を雑に残す",
+        "少しズレた空気で終える"
+      ]
+    }
+  }
+}
