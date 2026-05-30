@@ -1,7 +1,7 @@
 {
-  "id": "state_rule",
-  "display_name": "stateルール",
-  "scenario_type": "short_dialogue",
+  "id": "state_rule5",
+  "display_name": "stateルール5",
+  "scenario_type": "short_dialogue5",
   "rule_scope": "scenario_modifier_only",
 
   "description": "ずんだもん・めたん・天の声による、ショート動画向け基本会話。テンポとライブ感を優先する。",
