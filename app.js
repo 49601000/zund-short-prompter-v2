@@ -894,7 +894,7 @@ function onRollDice() {
 
 function mapDiceToRuleId(dice) {
   if (dice <= 5) {
-    return "rule1";
+    return "state_rule";
   }
   if (dice <= 7) {
     return "rule5";
@@ -1000,7 +1000,7 @@ function fallbackRuleFor(ruleId) {
     return "rule2";
   }
   if (ruleId === "rule5") {
-    return "rule1";
+    return "state_rule.json";
   }
   return ruleId;
 }
