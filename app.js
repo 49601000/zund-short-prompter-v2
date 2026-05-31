@@ -894,18 +894,18 @@ function onRollDice() {
 
 function mapDiceToRuleId(dice) {
   if (dice <= 5) {
-    return "state_rule";
+    return "state_rule1";
   }
   if (dice <= 7) {
-    return "state_rule";
+    return "state_rule2";
   }
   if (dice === 8) {
-    return "state_rule";
+    return "state_rule3";
   }
   if (dice <= 14) {
-    return "state_rule";
+    return "state_rule4";
   }
-  return "state_rule";
+  return "state_rule5";
 }
 
 async function onGeneratePrompt() {
@@ -997,10 +997,7 @@ async function fetchRule(ruleId) {
 
 function fallbackRuleFor(ruleId) {
   if (ruleId === "state_rule") {
-    return "state_rule";
-  }
-  if (ruleId === "state_rule") {
-    return "state_rule";
+    return "state_rule1";
   }
   return ruleId;
 }
