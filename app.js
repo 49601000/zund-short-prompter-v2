@@ -212,6 +212,7 @@ const state = {
   diceResult: null,
   selectedRuleId: "",
   selectedStyle: DEFAULT_STYLE_ID,
+  selectedConversationArc: "未ロール",
   selectedOpeningMode: DEFAULT_OPENING_MODE,
   openingPolicy: BUILTIN_FALLBACK_OPENING_POLICY,
   selectedLengthPreset: DEFAULT_LENGTH_PRESET,
@@ -256,6 +257,7 @@ async function bootstrap() {
   renderStatus();
   renderFinalPrompt();
   await Promise.all([loadPatchIndex(), loadStyleIndex(), loadOpeningPolicy(), loadLengthPolicy()]);
+  await refreshConversationArcSelection();
 }
 
 function setupIOSOnlyFeatures() {
@@ -400,6 +402,7 @@ function bindElements() {
   el.diceResult = document.getElementById("diceResult");
   el.selectedRule = document.getElementById("selectedRule");
   el.selectedStyle = document.getElementById("selectedStyle");
+  el.selectedConversationArc = document.getElementById("selectedConversationArc");
   el.selectedOpeningMode = document.getElementById("selectedOpeningMode");
   el.selectedLengthPreset = document.getElementById("selectedLengthPreset");
   el.patchContainer = document.getElementById("patchContainer");
@@ -419,6 +422,7 @@ function bindEvents() {
     state.selectedStyle = el.styleSelect.value || DEFAULT_STYLE_ID;
     localStorage.setItem(STORAGE_KEYS.selectedStyle, state.selectedStyle);
     renderStatus();
+    void refreshConversationArcSelection();
   });
   el.openingModeSelect.addEventListener("change", () => {
     state.selectedOpeningMode = normalizeOpeningModeId(el.openingModeSelect.value);
@@ -468,7 +472,10 @@ function loadFromStorage() {
   }
 
   if (storedRule) {
-    state.selectedRuleId = storedRule;
+    state.selectedRuleId = normalizeRuleId(storedRule);
+    if (state.selectedRuleId !== storedRule) {
+      localStorage.setItem(STORAGE_KEYS.selectedRuleId, state.selectedRuleId);
+    }
   }
 
   if (storedStyle) {
@@ -509,6 +516,9 @@ function renderStatus() {
   el.diceResult.textContent = state.diceResult ?? "未ロール";
   el.selectedRule.textContent = state.selectedRuleId || "未選択";
   el.selectedStyle.textContent = state.selectedStyle || DEFAULT_STYLE_ID;
+  if (el.selectedConversationArc) {
+    el.selectedConversationArc.textContent = state.selectedConversationArc || "未選択";
+  }
   el.selectedOpeningMode.textContent = state.selectedOpeningMode || DEFAULT_OPENING_MODE;
   el.selectedLengthPreset.textContent = state.selectedLengthPreset || DEFAULT_LENGTH_PRESET;
   el.generateBtn.disabled = !state.diceResult;
@@ -888,11 +898,37 @@ function onRollDice() {
   localStorage.setItem(STORAGE_KEYS.selectedRuleId, selectedRuleId);
 
   renderStatus();
+  void refreshConversationArcSelection();
   flashButtonStatus(el.rollBtn, "ロールOK");
 }
 
 function mapDiceToRuleId(dice) {
   return "state_rule";
+}
+
+async function refreshConversationArcSelection() {
+  if (!state.diceResult) {
+    state.selectedConversationArc = "未ロール";
+    renderStatus();
+    return;
+  }
+
+  try {
+    const style = await loadStyle(state.selectedStyle);
+    const conversationArcVariant = resolveConversationArcVariant(style, state.diceResult);
+    state.selectedConversationArc = formatConversationArcStatus(conversationArcVariant);
+  } catch (_error) {
+    state.selectedConversationArc = "none";
+  }
+
+  renderStatus();
+}
+
+function formatConversationArcStatus(variant) {
+  if (!variant) {
+    return "none";
+  }
+  return `${variant.variant_id} (${variant.desire_curve_id} x ${variant.ending_turn_id})`;
 }
 
 async function onGeneratePrompt() {
@@ -942,6 +978,7 @@ async function onGeneratePrompt() {
     const openingPolicyMode = getSelectedOpeningMode(personas, guestCharacters);
     const lengthPolicyMode = getSelectedLengthPolicyMode(rule);
     const conversationArcVariant = resolveConversationArcVariant(style, state.diceResult);
+    state.selectedConversationArc = formatConversationArcStatus(conversationArcVariant);
 
     const assembledPrompt = assemblePrompt({
       debateEngine,
@@ -960,6 +997,7 @@ async function onGeneratePrompt() {
     state.finalPrompt = assembledPrompt;
     localStorage.setItem(STORAGE_KEYS.finalPrompt, assembledPrompt);
     el.finalPrompt.value = assembledPrompt;
+    renderStatus();
     flashButtonStatus(el.generateBtn, "生成OK");
   } catch (error) {
     showError(error.message);
@@ -968,15 +1006,16 @@ async function onGeneratePrompt() {
 }
 
 async function fetchRule(ruleId) {
+  const normalizedRuleId = normalizeRuleId(ruleId);
   try {
-    return await fetchJson(`data/rules/${ruleId}.json`, ruleId);
+    return await fetchJson(`data/rules/${normalizedRuleId}.json`, normalizedRuleId);
   } catch (error) {
-    const fallbackRuleId = fallbackRuleFor(ruleId);
-    if (fallbackRuleId !== ruleId) {
+    const fallbackRuleId = fallbackRuleFor(normalizedRuleId);
+    if (fallbackRuleId !== normalizedRuleId) {
       const fallbackRule = await fetchJson(`data/rules/${fallbackRuleId}.json`, fallbackRuleId);
       return {
         ...fallbackRule,
-        id: ruleId,
+        id: normalizedRuleId,
         display_name: `${fallbackRule.display_name} (fallback from ${fallbackRuleId})`
       };
     }
@@ -984,10 +1023,7 @@ async function fetchRule(ruleId) {
   }
 }
 
-function fallbackRuleFor(ruleId) {
-  if (ruleId === "state_rule") {
-    return "state_rule";
-  }
+function normalizeRuleId(ruleId) {
   if (ruleId === "state_rule1"
     || ruleId === "state_rule2"
     || ruleId === "state_rule3"
@@ -996,6 +1032,14 @@ function fallbackRuleFor(ruleId) {
     return "state_rule";
   }
   return ruleId;
+}
+
+function fallbackRuleFor(ruleId) {
+  const normalizedRuleId = normalizeRuleId(ruleId);
+  if (normalizedRuleId === "state_rule") {
+    return "state_rule";
+  }
+  return normalizedRuleId;
 }
 
 async function loadPersona(id) {
@@ -1026,12 +1070,48 @@ function normalizePersona(rawPersona, fallbackId) {
 }
 
 function normalizeBrainLayer(rawLayer) {
-  return {
+  const normalized = {
     cognitive_style: sanitizeStringList(rawLayer.cognitive_style, 6),
     core_drive: firstNonEmptyString([rawLayer.core_drive]) || "議題に対して独自の推論軸を作る",
     debate_behavior: sanitizeStringList(rawLayer.debate_behavior, 6),
     weaknesses: sanitizeStringList(rawLayer.weaknesses, 6),
     reaction_pattern: sanitizeStringList(rawLayer.reaction_pattern, 6)
+  };
+
+  const culturalMemoryMatching = normalizeCulturalMemoryMatching(rawLayer.cultural_memory_matching);
+  if (culturalMemoryMatching) {
+    normalized.cultural_memory_matching = culturalMemoryMatching;
+  }
+
+  return normalized;
+}
+
+function normalizeCulturalMemoryMatching(rawMatching) {
+  if (!rawMatching || typeof rawMatching !== "object") {
+    return null;
+  }
+
+  const priority = sanitizeStringList(
+    rawMatching.priority ?? rawMatching.evaluation_order,
+    8
+  );
+  const domainDistanceRules = sanitizeStringList(rawMatching.domain_distance_rules, 12);
+  const selectionRules = sanitizeStringList(rawMatching.selection_rules, 12);
+  const avoidRules = sanitizeStringList(rawMatching.avoid_rules ?? rawMatching.forbidden, 12);
+
+  const hasAnyRule = priority.length > 0
+    || domainDistanceRules.length > 0
+    || selectionRules.length > 0
+    || avoidRules.length > 0;
+  if (!hasAnyRule) {
+    return null;
+  }
+
+  return {
+    ...(priority.length > 0 ? { priority } : {}),
+    ...(domainDistanceRules.length > 0 ? { domain_distance_rules: domainDistanceRules } : {}),
+    ...(selectionRules.length > 0 ? { selection_rules: selectionRules } : {}),
+    ...(avoidRules.length > 0 ? { avoid_rules: avoidRules } : {})
   };
 }
 

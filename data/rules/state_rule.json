@@ -1,5 +1,5 @@
 {
-  "id": "state_rule1",
+  "id": "state_rule",
   "display_name": "stateルール",
   "scenario_type": "short_dialogue1",
   "rule_scope": "scenario_modifier_only",
