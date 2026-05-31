@@ -539,7 +539,7 @@ async function loadPatchIndex() {
 
 async function loadStyleIndex() {
   try {
-    const styleIndex = await fetchJson("styles/index.json", "Style index");
+    const styleIndex = await fetchJson("data/styles/index.json", "Style index");
     if (!Array.isArray(styleIndex) || styleIndex.length === 0) {
       throw new Error("配列形式の style index が必要です。");
     }
@@ -969,11 +969,11 @@ async function onGeneratePrompt() {
 
 async function fetchRule(ruleId) {
   try {
-    return await fetchJson(`rules/${ruleId}.json`, ruleId);
+    return await fetchJson(`data/rules/${ruleId}.json`, ruleId);
   } catch (error) {
     const fallbackRuleId = fallbackRuleFor(ruleId);
     if (fallbackRuleId !== ruleId) {
-      const fallbackRule = await fetchJson(`rules/${fallbackRuleId}.json`, fallbackRuleId);
+      const fallbackRule = await fetchJson(`data/rules/${fallbackRuleId}.json`, fallbackRuleId);
       return {
         ...fallbackRule,
         id: ruleId,
@@ -1000,10 +1000,10 @@ function fallbackRuleFor(ruleId) {
 
 async function loadPersona(id) {
   try {
-    const rawPersona = await fetchJson(`personas/${id}.json`, `persona:${id}`);
+    const rawPersona = await fetchJson(`data/personas/${id}.json`, `persona:${id}`);
     return normalizePersona(rawPersona, id);
   } catch (_error) {
-    const legacyPersona = await fetchJson(`characters/${id}.json`, `character:${id}`);
+    const legacyPersona = await fetchJson(`data/characters/${id}.json`, `character:${id}`);
     return normalizePersona(legacyPersona, id);
   }
 }
@@ -1117,12 +1117,12 @@ function firstNonEmptyString(candidates) {
 
 async function loadStyle(styleId) {
   try {
-    const style = await fetchJson(`styles/${styleId}.json`, `style:${styleId}`);
+    const style = await fetchJson(`data/styles/${styleId}.json`, `style:${styleId}`);
     return normalizeStyle(style, styleId);
   } catch (_error) {
     try {
       const fallbackStyle = await fetchJson(
-        `styles/${DEFAULT_STYLE_ID}.json`,
+        `data/styles/${DEFAULT_STYLE_ID}.json`,
         `style:${DEFAULT_STYLE_ID}`
       );
       return normalizeStyle(fallbackStyle, DEFAULT_STYLE_ID);
