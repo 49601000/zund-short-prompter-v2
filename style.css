@@ -317,6 +317,69 @@ legend {
   white-space: pre-wrap;
 }
 
+.mode-selector {
+  min-height: calc(100vh - 100px);
+  display: grid;
+  align-content: center;
+  gap: 18px;
+}
+
+.selector-hero {
+  max-width: 720px;
+}
+
+.selector-hero h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
+}
+
+.selector-hero p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.selector-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mode-card {
+  min-height: 150px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 18px;
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.mode-card:hover,
+.mode-card:focus-visible {
+  border-color: var(--accent-2);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.mode-card strong {
+  font-size: 1.28rem;
+}
+
+.mode-card span:last-child {
+  color: var(--muted);
+}
+
+.mode-kicker {
+  color: var(--accent-2);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .ios-standalone .app-header {
   top: 0;
 }
@@ -337,6 +400,10 @@ legend {
 
   .controls button {
     flex: 1 1 100%;
+  }
+
+  .selector-grid {
+    grid-template-columns: 1fr;
   }
 
   .topbar {

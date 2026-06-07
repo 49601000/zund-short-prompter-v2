@@ -11,7 +11,10 @@ const STORAGE_KEYS = {
   finalPrompt: "resuba_final_prompt"
 };
 
-const PERSONA_IDS = ["zundamon", "metan", "ten_no_koe"];
+const PROMPT_VARIANT = window.PROMPT_VARIANT === "ten_no_koe" ? "ten_no_koe" : "dialogue";
+const TEN_NO_KOE_ENABLED_BY_VARIANT = PROMPT_VARIANT === "ten_no_koe";
+const BASE_PERSONA_IDS = ["zundamon", "metan"];
+const TEN_NO_KOE_PERSONA_ID = "ten_no_koe";
 const DEFAULT_STYLE_ID = "zundamon_short_dialogue";
 const DEFAULT_OPENING_MODE = "zundamon_cold_open";
 const DEFAULT_LENGTH_PRESET = "very_short";
@@ -21,6 +24,10 @@ let splashHasInitialized = false;
 let splashTimer = null;
 let splashHideTimer = null;
 let splashSafetyTimer = null;
+
+function getFinalPromptStorageKey() {
+  return `${STORAGE_KEYS.finalPrompt}_${PROMPT_VARIANT}`;
+}
 
 const PATCH_TYPE_LABELS = {
   character_tuning: "Character",
@@ -218,6 +225,7 @@ const state = {
   selectedLengthPreset: DEFAULT_LENGTH_PRESET,
   customLengthMin: 1400,
   customLengthMax: 1600,
+  tenNoKoeGuestEnabled: TEN_NO_KOE_ENABLED_BY_VARIANT,
   lengthPolicy: BUILTIN_FALLBACK_LENGTH_POLICY,
   styleIndex: [{ id: DEFAULT_STYLE_ID, display_name: "ずんだもんショート", file: "zundamon_short_dialogue.json" }],
   patchIndex: [],
@@ -457,7 +465,7 @@ function loadFromStorage() {
   const storedLengthPreset = localStorage.getItem(STORAGE_KEYS.selectedLengthPreset);
   const storedLengthMin = localStorage.getItem(STORAGE_KEYS.customLengthMin);
   const storedLengthMax = localStorage.getItem(STORAGE_KEYS.customLengthMax);
-  const storedFinalPrompt = localStorage.getItem(STORAGE_KEYS.finalPrompt);
+  const storedFinalPrompt = localStorage.getItem(getFinalPromptStorageKey());
   const storedPatchIds = localStorage.getItem(STORAGE_KEYS.enabledPatchIds);
 
   if (storedTopic) {
@@ -931,9 +939,115 @@ function formatConversationArcStatus(variant) {
   return `${variant.variant_id} (${variant.desire_curve_id} x ${variant.ending_turn_id})`;
 }
 
+function getSelectedPersonaIds() {
+  return state.tenNoKoeGuestEnabled
+    ? [...BASE_PERSONA_IDS, TEN_NO_KOE_PERSONA_ID]
+    : [...BASE_PERSONA_IDS];
+}
+
+function referencesTenNoKoe(value) {
+  if (typeof value === "string") {
+    return value.includes("天の声") || value.toLowerCase().includes(TEN_NO_KOE_PERSONA_ID);
+  }
+
+  if (Array.isArray(value)) {
+    return value.some(referencesTenNoKoe);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value).some(([key, entry]) =>
+      referencesTenNoKoe(key) || referencesTenNoKoe(entry)
+    );
+  }
+
+  return false;
+}
+
+function sanitizeStringWithoutTenNoKoe(value) {
+  const sanitized = value
+    .replaceAll("ずんだもん・めたん・天の声", "ずんだもん・めたん")
+    .replaceAll("ずんだもん、四国めたん、天の声", "ずんだもん、四国めたん")
+    .replaceAll("ずんだもん /四国めたん /  天の声 の3名", "ずんだもん / 四国めたん の2名")
+    .replaceAll("ずんだもん / 四国めたん / 天の声 の3名", "ずんだもん / 四国めたん の2名");
+
+  return referencesTenNoKoe(sanitized) ? null : sanitized;
+}
+
+function sanitizeWithoutTenNoKoe(value) {
+  if (typeof value === "string") {
+    return sanitizeStringWithoutTenNoKoe(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => sanitizeWithoutTenNoKoe(entry))
+      .filter((entry) => entry !== null && entry !== undefined);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value).reduce((acc, [key, entry]) => {
+      if (referencesTenNoKoe(key)) {
+        return acc;
+      }
+
+      const sanitizedEntry = sanitizeWithoutTenNoKoe(entry);
+      if (sanitizedEntry !== null && sanitizedEntry !== undefined) {
+        acc[key] = sanitizedEntry;
+      }
+      return acc;
+    }, {});
+  }
+
+  return value;
+}
+
+function sanitizeDebateEngineWithoutTenNoKoe(text) {
+  return text
+    .replaceAll("ずんだもん・めたん・天の声による", "ずんだもん・めたんによる")
+    .replaceAll("ずんだもん /四国めたん /  天の声 の3名", "ずんだもん / 四国めたん の2名")
+    .split(/\r?\n/)
+    .filter((line) => !referencesTenNoKoe(line))
+    .join("\n")
+    .trim();
+}
+
+function sanitizeOutputFormatWithoutTenNoKoe(text) {
+  const keptLines = [];
+  let skippingTenNoKoeBlock = false;
+
+  text.split(/\r?\n/).forEach((line) => {
+    const trimmed = line.trim();
+
+    if (trimmed === "天の声は、") {
+      skippingTenNoKoeBlock = true;
+      return;
+    }
+
+    if (skippingTenNoKoeBlock) {
+      if (line.includes("などに限定して短く使用してよい。")) {
+        skippingTenNoKoeBlock = false;
+      }
+      return;
+    }
+
+    if (line.includes("天の声：「") || trimmed === "* 天の声") {
+      return;
+    }
+
+    if (referencesTenNoKoe(line)) {
+      return;
+    }
+
+    keptLines.push(line);
+  });
+
+  return keptLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 async function onGeneratePrompt() {
   clearError();
   const topic = el.topicInput.value.trim();
+  const tenNoKoeEnabled = state.tenNoKoeGuestEnabled;
 
   if (!topic) {
     showError("議題を入力してください。");
@@ -948,6 +1062,7 @@ async function onGeneratePrompt() {
   }
 
   try {
+    const personaIds = getSelectedPersonaIds();
     const [debateEngine, outputFormat, rule, personas, style] = await Promise.all([
       fetchTextWithFallback(
         "base/debate_engine.txt",
@@ -957,12 +1072,31 @@ async function onGeneratePrompt() {
       ),
       fetchText("base/output_format.txt", "output_format"),
       fetchRule(state.selectedRuleId),
-      Promise.all(PERSONA_IDS.map((id) => loadPersona(id))),
+      Promise.all(personaIds.map((id) => loadPersona(id))),
       loadStyle(state.selectedStyle)
     ]);
 
+    const activeDebateEngine = tenNoKoeEnabled
+      ? debateEngine
+      : sanitizeDebateEngineWithoutTenNoKoe(debateEngine);
+    const activeOutputFormat = tenNoKoeEnabled
+      ? outputFormat
+      : sanitizeOutputFormatWithoutTenNoKoe(outputFormat);
+    const activeRule = tenNoKoeEnabled
+      ? rule
+      : sanitizeWithoutTenNoKoe(rule);
+    const activeStyle = tenNoKoeEnabled
+      ? style
+      : sanitizeWithoutTenNoKoe(style);
+    const activeOpeningPolicy = tenNoKoeEnabled
+      ? state.openingPolicy
+      : sanitizeWithoutTenNoKoe(state.openingPolicy);
+    const activeLengthPolicy = tenNoKoeEnabled
+      ? state.lengthPolicy
+      : sanitizeWithoutTenNoKoe(state.lengthPolicy);
+
     const selectedPatchEntries = state.patchIndex.filter((patch) =>
-      state.enabledPatchIds.has(patch.id)
+      state.enabledPatchIds.has(patch.id) && (tenNoKoeEnabled || !referencesTenNoKoe(patch))
     );
 
     const patchPayloads = await Promise.all(
@@ -970,32 +1104,39 @@ async function onGeneratePrompt() {
         fetchJson(`patches/${patch.file}`, `patch:${patch.id}`)
       )
     );
+    const activePatchPayloads = tenNoKoeEnabled
+      ? patchPayloads
+      : patchPayloads
+        .filter((patch) => !referencesTenNoKoe(patch))
+        .map((patch) => sanitizeWithoutTenNoKoe(patch))
+        .filter(Boolean);
 
-    const guestCharacters = patchPayloads
+    const guestCharacters = activePatchPayloads
       .map((patch) => patch.guest_character)
       .filter((guest) => guest && guest.display_name && guest.prompt_fragment);
 
-    const openingPolicyMode = getSelectedOpeningMode(personas, guestCharacters);
-    const lengthPolicyMode = getSelectedLengthPolicyMode(rule);
-    const conversationArcVariant = resolveConversationArcVariant(style, state.diceResult);
+    const openingPolicyMode = getSelectedOpeningMode(personas, guestCharacters, activeOpeningPolicy);
+    const lengthPolicyMode = getSelectedLengthPolicyMode(activeRule, activeLengthPolicy);
+    const conversationArcVariant = resolveConversationArcVariant(activeStyle, state.diceResult);
     state.selectedConversationArc = formatConversationArcStatus(conversationArcVariant);
 
     const assembledPrompt = assemblePrompt({
-      debateEngine,
-      outputFormat,
+      debateEngine: activeDebateEngine,
+      outputFormat: activeOutputFormat,
       personas,
-      rule,
-      style,
+      rule: activeRule,
+      style: activeStyle,
       conversationArcVariant,
       openingPolicyMode,
       lengthPolicyMode,
-      patchPayloads,
+      patchPayloads: activePatchPayloads,
       guestCharacters,
+      tenNoKoeEnabled,
       topic
     });
 
     state.finalPrompt = assembledPrompt;
-    localStorage.setItem(STORAGE_KEYS.finalPrompt, assembledPrompt);
+    localStorage.setItem(getFinalPromptStorageKey(), assembledPrompt);
     el.finalPrompt.value = assembledPrompt;
     renderStatus();
     flashButtonStatus(el.generateBtn, "生成OK");
@@ -1286,8 +1427,8 @@ function normalizeConversationArcVariant(rawVariant, variantId, desire, ending, 
   };
 }
 
-function getSelectedOpeningMode(personas, guestCharacters) {
-  const policy = state.openingPolicy || BUILTIN_FALLBACK_OPENING_POLICY;
+function getSelectedOpeningMode(personas, guestCharacters, openingPolicy = state.openingPolicy) {
+  const policy = openingPolicy || BUILTIN_FALLBACK_OPENING_POLICY;
   const modeId = normalizeOpeningModeId(state.selectedOpeningMode);
   const selected = policy.available_modes[modeId];
   const candidates = [
@@ -1307,8 +1448,8 @@ function getSelectedOpeningMode(personas, guestCharacters) {
   };
 }
 
-function getSelectedLengthPolicyMode(rule) {
-  const policy = state.lengthPolicy || BUILTIN_FALLBACK_LENGTH_POLICY;
+function getSelectedLengthPolicyMode(rule, lengthPolicy = state.lengthPolicy) {
+  const policy = lengthPolicy || BUILTIN_FALLBACK_LENGTH_POLICY;
   const presetId = normalizeLengthPresetId(state.selectedLengthPreset);
   const preset = policy.presets[presetId];
 
@@ -1355,6 +1496,7 @@ function assemblePrompt(payload) {
     lengthPolicyMode,
     patchPayloads,
     guestCharacters,
+    tenNoKoeEnabled,
     topic
   } = payload;
 
@@ -1400,9 +1542,7 @@ function assemblePrompt(payload) {
     "",
     "# Mandatory Composition Instructions",
     "- ショート動画向けの短文ラリーを最優先する",
-    "- ずんだもんは欲望・感情・極論で空気を動かす",
-    "- めたんは短くツッコミ・解説する",
-    "- 天の声は必要時のみ登場し、風刺的な比喩で空気を切る",
+    ...formatCharacterCompositionInstructions(tenNoKoeEnabled),
     "- 各発言は直前または直近の発言へ反応する",
     "- 長文モノローグは禁止",
     "- 説明よりリアクションを優先する",
@@ -1441,6 +1581,14 @@ function formatRuleLayer(rule, patchPayloads, guestCharacters) {
     : "なし";
 
   const normalizedRule = normalizeRuleForPrompt(rule);
+  if (!state.tenNoKoeGuestEnabled) {
+    const postWalkoutDebate = normalizedRule?.modifiers?.post_walkout_debate;
+    if (postWalkoutDebate && Array.isArray(postWalkoutDebate.continue_with)) {
+      postWalkoutDebate.continue_with = postWalkoutDebate.continue_with.filter(
+        (id) => id !== TEN_NO_KOE_PERSONA_ID
+      );
+    }
+  }
 
   return [
     "rule_json:",
@@ -1541,6 +1689,24 @@ function formatConversationArcInstructions(variant) {
     "- 上記ルールは演出の方向づけとして扱い、議題破綻や同一オチ固定は避ける",
     "- 金銭要求・奢り要求は『可能な終わり方の一つ』として扱い、毎回必須にしない"
   ];
+}
+
+function formatCharacterCompositionInstructions(enabled) {
+  const base = [
+    "- ずんだもんは欲望・感情・極論で空気を動かす",
+    "- めたんは短くツッコミ・解説する"
+  ];
+
+  if (enabled) {
+    return [
+      ...base,
+      "- 天の声は現行ルール通り補助キャラクターとして扱う",
+      "- 天の声は必要時のみ登場し、風刺的な比喩で空気を切る",
+      "- 天の声の登場は1話につき0〜1回までにする"
+    ];
+  }
+
+  return base;
 }
 
 function formatOpeningPolicyMode(mode) {

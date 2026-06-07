@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ずんだもんショート">
+
+    <link rel="icon" type="image/png" sizes="180x180" href="./apple-touch-icon-zunda-v2.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon-zunda-v2.png">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="stylesheet" href="style.css">
+
+    <title>ずんだもんショート演出エンジン v1.3 / 会話版</title>
+
+    <script>
+      window.PROMPT_VARIANT = "dialogue";
+    </script>
+
+    <script>
+      (function () {
+        try {
+          var splashMode = new URLSearchParams(window.location.search).get("splash");
+          var forceSplash = splashMode === "1" || splashMode === "debug";
+          var isIOS =
+            /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+          var isStandalone =
+            window.navigator.standalone === true ||
+            (
+              window.matchMedia &&
+              window.matchMedia("(display-mode: standalone)").matches
+            );
+
+          if (forceSplash || (isIOS && isStandalone)) {
+            document.documentElement.classList.add("pre-splash");
+          }
+        } catch (error) {
+          // noop
+        }
+      }());
+    </script>
+  </head>
+
+  <body>
+    <div id="splash-screen" class="splash-overlay">
+      <div class="splash-inner">
+        <h2 class="splash-title">ずんだもんショート生成</h2>
+        <p class="splash-subtitle">Initializing Debate Engine...</p>
+      </div>
+    </div>
+
+    <header class="app-header">
+      <div class="topbar">
+        <div class="topbarLeft">
+          <div class="brandMark" aria-hidden="true">⬢</div>
+          <div class="brandText">PromptBuilder</div>
+          <div class="topbarDivider" aria-hidden="true"></div>
+          <h1 class="topbarTitle">ずんだもんショート演出エンジン / 会話版</h1>
+        </div>
+
+        <div class="topbarVersion">v1.3</div>
+      </div>
+    </header>
+
+    <main class="app">
+      <section class="panel">
+        <label for="topicInput" class="label">議題</label>
+        <textarea
+          id="topicInput"
+          rows="3"
+          placeholder="例: テーマを一言で入れてOK"
+        ></textarea>
+      </section>
+
+      <section class="panel">
+        <label for="styleSelect" class="label">Style</label>
+        <select id="styleSelect"></select>
+      </section>
+
+      <section class="panel">
+        <label for="openingModeSelect" class="label">Opening Mode</label>
+        <select id="openingModeSelect"></select>
+      </section>
+
+      <section class="panel">
+        <label for="zundamonStateSelect" class="label">ずんだもん State</label>
+        <select id="zundamonStateSelect">
+          <option value="auto">自動選択</option>
+          <option value="extreme">極論</option>
+          <option value="personal_rule">自分ルール</option>
+          <option value="victim_mode">被害妄想</option>
+          <option value="conspiracy_mode">陰謀論</option>
+          <option value="apathy">無気力</option>
+        </select>
+      </section>
+
+      <section class="panel">
+        <label for="lengthPresetSelect" class="label">会話分量</label>
+        <select id="lengthPresetSelect"></select>
+
+        <div class="length-custom">
+          <label for="lengthMinInput">min</label>
+          <input id="lengthMinInput" type="number" min="100" step="50">
+
+          <label for="lengthMaxInput">max</label>
+          <input id="lengthMaxInput" type="number" min="100" step="50">
+        </div>
+      </section>
+
+      <section class="panel controls">
+        <button id="rollBtn" type="button">Roll (1d20)</button>
+        <button id="generateBtn" type="button">Generate Prompt</button>
+        <button id="copyBtn" type="button">Copy</button>
+        <button
+          id="geminiOpenBtn"
+          type="button"
+          class="gemini-open-btn"
+          hidden
+        >
+          Geminiで開く
+        </button>
+      </section>
+
+      <section class="panel status">
+        <p>ダイスロール結果: <strong id="diceResult">未ロール</strong></p>
+        <p>適用ルール: <strong id="selectedRule">stateルール</strong></p>
+        <p>Style: <strong id="selectedStyle">ずんだもんショート会話</strong></p>
+        <p>Arc Roll: <strong id="selectedConversationArc">未ロール</strong></p>
+        <p>Opening: <strong id="selectedOpeningMode">ずんだもんあるあるスタート</strong></p>
+        <p>State: <strong id="selectedZundamonState">自動選択</strong></p>
+        <p>Length: <strong id="selectedLengthPreset">very_short</strong></p>
+      </section>
+
+      <section class="panel">
+        <h2>Patch Selector</h2>
+        <div id="patchContainer" class="patches"></div>
+      </section>
+
+      <section class="panel error" id="errorBox" hidden></section>
+
+      <section class="panel">
+        <label for="finalPrompt" class="label">Final Prompt</label>
+        <textarea id="finalPrompt" rows="22" readonly></textarea>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>	
