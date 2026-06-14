@@ -2,17 +2,19 @@
 
 ずんだもんショート用の会話プロンプトを生成する静的Webアプリです。
 
-`index.html` はモード選択ページで、実際の生成画面は2つのHTMLに分かれています。
+`index.html` はモード選択ページで、実際の生成画面は3つのHTMLに分かれています。
 
 - `ver-dialogue.html`: ずんだもん・めたんの2人会話版
 - `ver-Ten-no-koe.html`: 現行の天の声あり3人構成版
+- `ver-compression-kun.html`: 既存の会話をショート用に圧縮するプロンプト生成版
 
 つまりこういうことや。
 
 ```text
 index.html
-  ├─ ver-dialogue.html      # 天の声なし
-  └─ ver-Ten-no-koe.html    # 天の声あり
+  ├─ ver-dialogue.html          # 天の声なし
+  ├─ ver-Ten-no-koe.html        # 天の声あり
+  └─ ver-compression-kun.html   # 既存会話の圧縮
 ```
 
 ## 主な機能
@@ -24,6 +26,7 @@ index.html
 - Patch Selector でイベント・ゲスト・文脈パッチを適用
 - Conversation Arc Roll で会話の流れを変化
 - Final Prompt のコピー
+- 既存会話をテンポ重視で圧縮する添削プロンプトの生成
 - iOSスタンドアロン時のみ `Geminiで開く` ボタンを表示
 - localStorageで入力状態と生成結果を保存
 
@@ -42,6 +45,22 @@ AIへの「天の声を出すな」という禁止指示で制御するのでは
 
 `base/`, `data/personas/`, `data/styles/`, `data/rules/`, `base/output_format.txt` に含まれる天の声ルールをそのまま使います。
 天の声は補助キャラクターとして扱い、現行プロンプト通り必要時に一言だけ参入する建付けです。
+
+### ver-compression-kun
+
+`ver-compression-kun.html` は、入力したキャラクター同士の会話をショート動画向けに圧縮するためのプロンプトを生成します。
+
+元セリフを貼って `プロンプト生成` を押すと、次の内容をひと続きのプロンプトとして出力します。
+
+- プロのコメディ脚本添削家としての役割
+- キャラクター性や笑いを維持する圧縮ルール
+- 圧縮版と圧縮ポイントを求める出力形式
+- `<会話テキスト>` で区切られた入力会話
+
+目標尺と圧縮強度の設定は現在無効化され、画面にも表示されません。
+入力会話は命令ではなく処理対象であることを明記して出力されます。
+
+iPhoneのホーム画面用には、`apple-touch-icon-zunda-` で始まり `cmprn.png` で終わる圧縮くん専用アイコンを使用します。専用設定は `manifest-compression.webmanifest` に定義しています。
 
 ## 起動方法
 
@@ -62,6 +81,7 @@ http://localhost:8000/
 ```text
 http://localhost:8000/ver-dialogue.html
 http://localhost:8000/ver-Ten-no-koe.html
+http://localhost:8000/ver-compression-kun.html
 ```
 
 ## 使い方
@@ -74,6 +94,13 @@ http://localhost:8000/ver-Ten-no-koe.html
 6. `Copy` でFinal Promptをコピーする
 
 iOSスタンドアロン表示では、生成後に `Geminiで開く` も使えます。
+
+圧縮くんを使う場合は次の手順です。
+
+1. `index.html` で「ずんだもんショート用 圧縮くん」を選ぶ
+2. 元セリフ欄に会話を貼り付ける
+3. `プロンプト生成` を押す
+4. `出力をコピー` で生成されたプロンプトをコピーする
 
 ## Prompt Assembly
 
@@ -121,9 +148,12 @@ Final Prompt はモードごとに分けて保存されます。
 ├─ index.html                 # モード選択
 ├─ ver-dialogue.html          # ずんだもん・めたん版
 ├─ ver-Ten-no-koe.html        # 天の声あり版
+├─ ver-compression-kun.html   # 既存会話の圧縮プロンプト生成
 ├─ app.js                     # プロンプト生成ロジック
 ├─ style.css
 ├─ manifest.webmanifest
+├─ manifest-compression.webmanifest
+├─ apple-touch-icon-zunda-*.png    # 各モード用アイコン（圧縮くんは末尾 cmprn.png）
 ├─ base
 │  ├─ base_prompt.txt
 │  ├─ debate_engine.txt
@@ -157,6 +187,7 @@ node scripts/build-patch-index.js
 ## 開発メモ
 
 - `ver-dialogue.html` と `ver-Ten-no-koe.html` は同じ `app.js` を使います。
+- `ver-compression-kun.html` の圧縮プロンプト生成処理はHTML内のスクリプトにあります。
 - モード差分はHTML側の `window.PROMPT_VARIANT` で決まります。
 - 天の声なし版は、AIへの禁止文ではなく、出力プロンプト素材から天の声関連を抜く方針です。
 - `index.html` は生成画面ではなく、モード選択ランチャーです。

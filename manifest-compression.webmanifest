@@ -1,0 +1,17 @@
+{
+  "name": "ずんだもんショート用 圧縮くん",
+  "short_name": "圧縮くん",
+  "start_url": "./ver-compression-kun.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#081119",
+  "theme_color": "#0d3f39",
+  "icons": [
+    {
+      "src": "./apple-touch-icon-zunda-cmprn.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
